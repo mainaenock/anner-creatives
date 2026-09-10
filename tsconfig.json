@@ -29,7 +29,7 @@
     },
     "types": [
       "node",
-      "@cloudflare/workers-types"
+      "./worker-configuration.d.ts"
     ]
   },
   "include": [
