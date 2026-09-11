@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { starterProducts } from "@/lib/catalog";
+import { productImageUrl, starterProducts } from "@/lib/catalog";
 import type { Product } from "@/lib/catalog";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
@@ -12,7 +12,7 @@ const SITE_URL = "https://annercreatives.co.ke";
 async function findProduct(id: string): Promise<Product | undefined> {
   try {
     const [row] = await getDb().select().from(products).where(eq(products.id, Number(id))).limit(1);
-    if (row?.active) return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:row.imageKey?`/api/images/${encodeURIComponent(row.imageKey)}`:"",images:row.imageKey?[`/api/images/${encodeURIComponent(row.imageKey)}`]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"] };
+    if (row?.active) return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:productImageUrl(row.imageKey),images:row.imageKey?[productImageUrl(row.imageKey)]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"] };
   } catch { /* Local builds may not have a D1 binding. */ }
   return starterProducts.find((item) => item.id === Number(id));
 }

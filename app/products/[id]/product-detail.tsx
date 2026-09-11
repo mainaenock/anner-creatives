@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ArrowLeft, Check, Heart, Minus, Plus, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import type { Product } from "@/lib/catalog";
 import { discount, money } from "@/lib/catalog";
 
@@ -23,7 +24,7 @@ export default function ProductDetail({ product, related }: { product: Product; 
     setAdded(true);
   }
 
-  return <main className="min-h-screen bg-[#fbfdff] text-[#17233b]">
+  return <main className="flex min-h-screen flex-col bg-[#fbfdff] text-[#17233b]">
     <SiteHeader showSearch onSearch={()=>setSearchOpen((value)=>!value)}/>
     {searchOpen&&<form action="/" className="sticky top-[76px] z-40 border-b border-sky-100 bg-white px-3 py-2 sm:top-[88px]"><label className="mx-auto flex max-w-xl items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-4"><Search className="size-4 text-slate-400"/><input autoFocus name="q" placeholder="Search pieces" className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"/></label></form>}
     <section className="mx-auto max-w-[1300px] px-4 py-6 sm:px-8 sm:py-12 lg:px-12"><a href="/#collection" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-700"><ArrowLeft className="size-4"/> Back to collection</a>
@@ -33,5 +34,6 @@ export default function ProductDetail({ product, related }: { product: Product; 
       </div>
     </section>
     <section className="mx-auto max-w-[1300px] px-4 pb-14 sm:px-8 lg:px-12"><h2 className="font-serif text-2xl font-bold sm:text-3xl">You may also like</h2><div className="mt-5 grid grid-cols-3 gap-2 sm:gap-5">{related.map((item)=><a key={item.id} href={`/products/${item.id}`} className="min-w-0 rounded-xl border border-sky-100 bg-white p-1.5 sm:rounded-2xl sm:p-3"><div className="relative aspect-square overflow-hidden rounded-lg" style={{background:item.color}}>{item.image?<Image src={item.image} alt={item.name} fill className="object-cover"/>:<ShoppingBag className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 text-white/70"/>}</div><h3 className="mt-2 line-clamp-2 font-serif text-xs font-bold sm:text-lg">{item.name}</h3><p className="mt-1 text-[11px] font-bold sm:text-sm">{money(item.price)}</p></a>)}</div></section>
+    <SiteFooter/>
   </main>;
 }

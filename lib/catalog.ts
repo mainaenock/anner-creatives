@@ -20,3 +20,4 @@ export const starterProducts: Product[] = [
 
 export const money = (value: number) => `KSh ${value.toLocaleString("en-KE")}`;
 export const discount = (product: Product) => product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+export const productImageUrl = (key?: string | null) => !key ? "" : key.startsWith("/") ? key : `/api/images/${encodeURIComponent(key)}`;
