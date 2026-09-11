@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { discount, money, starterProducts, type Product } from "@/lib/catalog";
+import { SiteHeader } from "@/components/site-header";
 
 type CartItem = Product & { quantity: number };
 
@@ -34,6 +35,16 @@ export default function Home() {
       }));
     } catch { localStorage.removeItem("anner-cart"); }
   }, []);
+  useEffect(() => {
+    fetch("/api/products", { cache: "no-store" }).then((response) => response.ok ? response.json() : Promise.reject()).then((data: { products: Array<{id:number;name:string;category:string;description:string;price:number;oldPrice:number|null;imageKey:string|null}> }) => {
+      if (!data.products.length) return;
+      setProducts(data.products.map((product) => ({ ...product, oldPrice: product.oldPrice ?? undefined, image: product.imageKey ? `/api/images/${encodeURIComponent(product.imageKey)}` : "", images: product.imageKey ? [`/api/images/${encodeURIComponent(product.imageKey)}`] : [], color: "#d9e9f8", details: ["Handmade by Anner Creatives", "Made in small batches"] })));
+    }).catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    const makerLink = document.querySelector<HTMLAnchorElement>('a[href="#story"]');
+    if (makerLink?.textContent?.includes("Meet the maker")) makerLink.href = "/about";
+  }, []);
   const categories = ["All pieces", ...Array.from(new Set(products.map((item) => item.category)))];
   const filtered = products.filter((item) => (category === "All pieces" || item.category === category) && item.name.toLowerCase().includes(query.toLowerCase()));
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -44,8 +55,9 @@ export default function Home() {
   function addProduct(event: React.FormEvent) { event.preventDefault(); if (!newProduct.name || !newProduct.price) return; setProducts((items) => [{ id: Date.now(), name: newProduct.name, category: newProduct.category || "Bags", price: Number(newProduct.price), oldPrice: Number(newProduct.oldPrice) || undefined, image: newProduct.images[0] || "", images: newProduct.images, color: "#d9e9f8", description: newProduct.description || "A new handcrafted piece from Anner Creatives.", details: ["Handmade by Anner Creatives", "Made in small batches"] }, ...items]); setNewProduct({ name: "", category: "Bags", price: "", oldPrice: "", description: "", images: [] }); }
 
   return <main className="min-h-screen overflow-x-clip bg-[#fbfdff] text-sm text-[#17233b] sm:text-base">
-    <header className="sticky top-0 z-50 border-b border-sky-100/80 bg-white/95 shadow-[0_1px_12px_rgba(23,35,59,.06)] backdrop-blur-xl"><div className="mx-auto flex h-[76px] max-w-[1400px] items-center justify-between px-3 sm:h-[88px] sm:px-8 lg:px-12"><button onClick={() => setView("shop")} className="flex h-[72px] w-[92px] items-center justify-start sm:h-[84px] sm:w-[116px]" aria-label="Go to shop"><Image src="/anner-mark-v2.png" alt="Anner Creatives" width={180} height={180} priority className="h-[70px] w-auto max-w-[92px] object-contain sm:h-[82px] sm:max-w-[116px]"/></button><nav className="hidden items-center gap-8 text-sm font-semibold md:flex"><button onClick={() => setView("shop")} className={view === "shop" ? "text-sky-700" : "text-slate-500 hover:text-slate-900"}>Shop</button><a href="#story" onClick={() => setView("shop")} className="text-slate-500 hover:text-slate-900">Our story</a><button onClick={() => setView("admin")} className={view === "admin" ? "text-sky-700" : "text-slate-500 hover:text-slate-900"}>Admin</button></nav><div className="flex items-center gap-2">{view === "shop"&&<button onClick={()=>setSearchOpen((value)=>!value)} className="flex size-9 items-center justify-center rounded-full border border-sky-200 bg-sky-50 md:hidden" aria-label={searchOpen?"Close search":"Search products"}>{searchOpen?<X className="size-4"/>:<Search className="size-4"/>}</button>}<Button onClick={() => setCartOpen(true)} variant="outline" className="relative h-9 rounded-full border-sky-200 bg-sky-50 px-3 text-xs text-sky-950 sm:h-11 sm:px-4 sm:text-sm"><ShoppingBag className="size-4"/> Cart {count > 0 && <span className="flex size-4 items-center justify-center rounded-full bg-[#e12b87] text-[10px] text-white sm:size-5 sm:text-[11px]">{count}</span>}</Button></div></div>{view === "shop" && searchOpen && <div className="border-t border-sky-50 px-3 py-2 md:hidden"><label className="mx-auto flex max-w-md items-center gap-2 rounded-full border border-sky-100 bg-sky-50/70 px-3"><Search className="size-3.5 text-slate-400"/><span className="sr-only">Search products</span><input autoFocus value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search pieces" className="h-9 min-w-0 flex-1 bg-transparent text-sm outline-none"/></label></div>}</header>
-    {view === "shop" ? <Store products={filtered} categories={categories} category={category} setCategory={setCategory} query={query} setQuery={setQuery} addToCart={addToCart}/> : <AdminView products={products} setProducts={setProducts} newProduct={newProduct} setNewProduct={setNewProduct} addProduct={addProduct} onShop={() => setView("shop")}/>} 
+    <SiteHeader showSearch onSearch={()=>setSearchOpen((value)=>!value)} cartCount={count} onCart={()=>setCartOpen(true)}/>
+    {searchOpen&&<div className="sticky top-[76px] z-40 border-b border-sky-100 bg-white px-3 py-2 sm:top-[88px]"><label className="mx-auto flex max-w-md items-center gap-2 rounded-full border border-sky-100 bg-sky-50/70 px-3"><Search className="size-3.5 text-slate-400"/><span className="sr-only">Search products</span><input autoFocus value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search pieces" className="h-9 min-w-0 flex-1 bg-transparent text-sm outline-none"/></label></div>}
+    <Store products={filtered} categories={categories} category={category} setCategory={setCategory} query={query} setQuery={setQuery} addToCart={addToCart}/>
     <footer className="mt-10 bg-[#13213d] px-4 py-8 text-white sm:mt-16 sm:px-5 sm:py-12"><div className="mx-auto flex max-w-[1300px] flex-col justify-between gap-5 sm:flex-row sm:items-center sm:gap-8"><div className="flex items-center gap-3"><Image src="/anner-logo.jpg" alt="" width={48} height={48} className="size-10 rounded-xl object-cover sm:size-12"/><div><p className="font-serif text-base font-bold sm:text-xl">Anner Creatives</p><p className="text-xs text-sky-200 sm:text-sm">Crafted with passion, designed with creativity.</p></div></div><p className="text-xs text-slate-400 sm:text-sm">Handmade with love in Kenya · © 2026</p></div></footer>
     <Cart open={cartOpen} setOpen={setCartOpen} items={cart} setItems={setCart} count={count} subtotal={subtotal} delivery={delivery} changeQuantity={changeQuantity} checkout={() => {setCartOpen(false);setCheckoutOpen(true)}}/>
     <Checkout open={checkoutOpen} setOpen={setCheckoutOpen} placed={orderPlaced} setPlaced={setOrderPlaced} total={subtotal+delivery}/>

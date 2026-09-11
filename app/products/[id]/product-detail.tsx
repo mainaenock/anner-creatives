@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Check, Heart, Minus, Plus, Search, ShoppingBag, X } from "lucide-react";
+import { ArrowLeft, Check, Heart, Minus, Plus, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
 import type { Product } from "@/lib/catalog";
 import { discount, money } from "@/lib/catalog";
 
@@ -24,13 +25,8 @@ export default function ProductDetail({ product, related }: { product: Product; 
   }
 
   return <main className="min-h-screen bg-[#fbfdff] text-[#17233b]">
-    <header className="sticky top-0 z-50 border-b border-sky-100 bg-white/95 shadow-[0_1px_12px_rgba(23,35,59,.06)] backdrop-blur-xl">
-      <div className="mx-auto flex h-[76px] max-w-[1400px] items-center justify-between px-3 sm:h-[88px] sm:px-8 lg:px-12">
-        <Link href="/" className="flex h-[72px] w-[92px] items-center sm:h-[84px] sm:w-[116px]"><Image src="/anner-mark-v2.png" alt="Anner Creatives" width={180} height={180} priority className="h-[70px] w-auto max-w-[92px] object-contain sm:h-[82px] sm:max-w-[116px]"/></Link>
-        <div className="flex items-center gap-2"><button onClick={()=>setSearchOpen((value)=>!value)} className="flex size-10 items-center justify-center rounded-full border border-sky-200 bg-sky-50" aria-label="Search products">{searchOpen?<X className="size-4"/>:<Search className="size-4"/>}</button><Link href="/#collection" className="flex h-10 items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 text-sm font-semibold"><ShoppingBag className="size-4"/> Shop</Link></div>
-      </div>
-      {searchOpen&&<form action="/" className="border-t border-sky-100 px-3 py-2"><label className="mx-auto flex max-w-xl items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-4"><Search className="size-4 text-slate-400"/><input autoFocus name="q" placeholder="Search pieces" className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"/></label></form>}
-    </header>
+    <SiteHeader showSearch onSearch={()=>setSearchOpen((value)=>!value)}/>
+    {searchOpen&&<form action="/" className="sticky top-[76px] z-40 border-b border-sky-100 bg-white px-3 py-2 sm:top-[88px]"><label className="mx-auto flex max-w-xl items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-4"><Search className="size-4 text-slate-400"/><input autoFocus name="q" placeholder="Search pieces" className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"/></label></form>}
     <section className="mx-auto max-w-[1300px] px-4 py-6 sm:px-8 sm:py-12 lg:px-12"><Link href="/#collection" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-700"><ArrowLeft className="size-4"/> Back to collection</Link>
       <div className="mt-5 grid gap-7 lg:grid-cols-[1.05fr_.95fr] lg:gap-14">
         <div><div className="relative aspect-square overflow-hidden rounded-[1.6rem] sm:rounded-[2.2rem]" style={{background:product.color}}>{selected?<Image src={selected} alt={product.name} fill priority className="object-cover" sizes="(max-width:1024px) 100vw, 52vw"/>:<div className="flex h-full items-center justify-center"><ShoppingBag className="size-28 text-white/70" strokeWidth={1}/></div>}{discount(product)>0&&<span className="absolute left-4 top-4 rounded-full bg-[#e12b87] px-3 py-1.5 text-xs font-bold text-white">Save {discount(product)}%</span>}</div>{gallery.length>1&&<div className="mt-3 grid grid-cols-5 gap-2">{gallery.map((image)=><button key={image} onClick={()=>setSelected(image)} className={`relative aspect-square overflow-hidden rounded-xl border-2 ${selected===image?"border-sky-600":"border-transparent"}`}><Image src={image} alt="" fill className="object-cover"/></button>)}</div>}</div>
