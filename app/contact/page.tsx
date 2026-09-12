@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Mail, MapPin, Phone, ShoppingBag } from "lucide-react";
 import { SiFacebook, SiInstagram } from "react-icons/si";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+
+function Link(props: React.ComponentProps<"a">) {
+  return <a {...props}/>;
+}
 
 export const metadata: Metadata = { title: "Contact", description: "Contact Anner Creatives about handmade bags, crochet pieces and custom orders." };
 
