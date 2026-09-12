@@ -13,6 +13,10 @@ import { discount, money, productImageUrl, starterProducts, type Product } from 
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
+function Link(props: React.ComponentProps<"a">) {
+  return <a {...props}/>;
+}
+
 
 type CartItem = Product & { quantity: number };
 
