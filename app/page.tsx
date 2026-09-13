@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, Heart, Minus, Package, Plus, Search, ShoppingBag, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { discount, money, productImageUrl, starterProducts, type Product } from "@/lib/catalog";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-
-function Link(props: React.ComponentProps<"a">) {
-  return <a {...props}/>;
-}
-
 
 type CartItem = Product & { quantity: number };
 
@@ -70,10 +66,10 @@ function Store({products,categories,category,setCategory,query,setQuery,addToCar
 
 function ProductCard({product,add}:{product:Product;add:()=>void}) {
   return <article className="product-card group min-w-0 rounded-xl border border-sky-100 bg-white p-1.5 shadow-[0_10px_30px_rgba(65,132,169,.08)] sm:rounded-[1.7rem] sm:p-3 sm:shadow-[0_18px_50px_rgba(65,132,169,.08)]">
-    <a href={`/products/${product.id}`} className="block" aria-label={`View details for ${product.name}`}>
+    <Link href={`/products/${product.id}`} className="block" aria-label={`View details for ${product.name}`}>
       <div className="relative aspect-[4/4.5] overflow-hidden rounded-lg sm:rounded-[1.25rem]" style={{background:product.color}}>{product.image?<Image src={product.image} alt={product.name} fill className="object-cover transition duration-500 group-hover:scale-105" sizes="(max-width: 640px) 33vw, 25vw"/>:<div className="flex h-full items-center justify-center"><ShoppingBag className="size-9 text-white/70 sm:size-24" strokeWidth={1}/></div>}{discount(product)>0&&<span className="absolute left-1 top-1 rounded-full bg-[#e12b87] px-1.5 py-0.5 text-[9px] font-bold text-white sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">-{discount(product)}%</span>}<span className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-white/90 shadow-sm sm:right-3 sm:top-3 sm:size-9"><Heart className="size-3 sm:size-4"/></span></div>
       <div className="min-w-0 px-0.5 pt-2 sm:px-2 sm:pt-4"><p className="truncate text-[9px] font-bold uppercase tracking-[.06em] text-sky-600 sm:text-xs sm:tracking-[.13em]">{product.category}</p><h3 className="mt-0.5 line-clamp-2 min-h-8 font-serif text-xs font-bold leading-4 sm:mt-1 sm:min-h-0 sm:text-xl sm:leading-normal">{product.name}</h3><p className="mt-2 hidden line-clamp-2 text-sm leading-6 text-slate-500 sm:block">{product.description}</p></div>
-    </a>
+    </Link>
     <div className="mt-2 flex items-end justify-between gap-1 px-0.5 pb-1 sm:mt-4 sm:items-center sm:px-2 sm:pb-2"><div className="min-w-0"><span className="block truncate text-[10px] font-bold sm:inline sm:text-base">{money(product.price)}</span>{product.oldPrice&&<span className="hidden text-sm text-slate-400 line-through sm:ml-2 sm:inline">{money(product.oldPrice)}</span>}</div><Button onClick={add} size="icon" className="size-7 shrink-0 rounded-full bg-sky-600 sm:size-9" aria-label={`Add ${product.name} to cart`}><Plus className="size-3.5 sm:size-4"/></Button></div>
   </article>
 }
