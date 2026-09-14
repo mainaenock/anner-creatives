@@ -1,0 +1,80 @@
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  /* Radix portals the invoice directly into body. Remove the storefront from
+     layout as well as view so it cannot create extra blank printed pages. */
+  body:has(.invoice-dialog) > :not(.invoice-dialog) {
+    display: none !important;
+  }
+
+  html:has(.invoice-dialog),
+  body:has(.invoice-dialog) {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  .invoice-dialog[data-slot="dialog-content"] {
+    position: static !important;
+    inset: auto !important;
+    /* Tailwind v4 uses the individual translate property for centering. */
+    translate: 0 0 !important;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    transform: none !important;
+    animation: none !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .invoice-dialog [data-slot="dialog-close"],
+  .invoice-actions {
+    display: none !important;
+  }
+
+  .invoice-paper {
+    width: 100% !important;
+    padding: 0 !important;
+    font-family: Arial, sans-serif;
+    font-size: 14pt !important;
+    line-height: 1.25;
+    color: black;
+    overflow-wrap: anywhere;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .invoice-header { padding-bottom: 4mm; }
+  .invoice-header img { width: 30mm; height: 30mm; margin-bottom: 8mm; }
+  .invoice-header h2 { font-size: 23pt; }
+  .invoice-meta {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 2mm 4mm;
+    padding: 4mm 0 8mm;
+  }
+  .invoice-meta p, .invoice-meta time { font-size: 14pt; }
+  .invoice-meta time { white-space: nowrap; }
+  .invoice-table { margin-top: 3mm; }
+  .invoice-table > div {
+    grid-template-columns: minmax(0, 1.5fr) .45fr .9fr .9fr;
+    break-inside: avoid;
+  }
+  .invoice-table > div:first-child { background: #eee; }
+  .invoice-table > div:not(:first-child) { min-height: 25mm; border: 0; }
+  .invoice-table > div > span:nth-child(n+3) { font-size: 12pt; }
+  .invoice-totals { margin-top: 4mm; padding: 5mm 0; }
+  .invoice-header, .invoice-meta, .invoice-totals,
+  .invoice-paper > section, .invoice-paper > .flex { break-inside: avoid; }
+}
