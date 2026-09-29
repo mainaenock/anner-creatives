@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { productImageUrl, starterProducts } from "@/lib/catalog";
+import { productImageUrl } from "@/lib/catalog";
 import type { Product } from "@/lib/catalog";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { getDb } from "@/db";
 import { products } from "@/db/schema";
 import ProductDetail from "./product-detail";
 
 const SITE_URL = "https://annercreatives.co.ke";
+export const dynamic = "force-dynamic";
+
+function toProduct(row:typeof products.$inferSelect):Product { return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:productImageUrl(row.imageKey),images:row.imageKey?[productImageUrl(row.imageKey)]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"],stockQuantity:row.stockQuantity }; }
 
 async function findProduct(id: string): Promise<Product | undefined> {
   try {
     const [row] = await getDb().select().from(products).where(eq(products.id, Number(id))).limit(1);
-    if (row?.active) return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:productImageUrl(row.imageKey),images:row.imageKey?[productImageUrl(row.imageKey)]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"] };
-  } catch { /* Local builds may not have a D1 binding. */ }
-  return starterProducts.find((item) => item.id === Number(id));
-}
-
-export function generateStaticParams() {
-  return starterProducts.map((product) => ({ id: String(product.id) }));
+    if (row?.active) return toProduct(row);
+  } catch { /* The catalog may be temporarily unavailable. */ }
+  return undefined;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -39,5 +38,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const product = await findProduct(id);
   if (!product) notFound();
-  return <ProductDetail product={product} related={starterProducts.filter((item) => item.id !== product.id).slice(0, 3)} />;
+  const related = await getDb().select().from(products).where(and(eq(products.active,true),ne(products.id,product.id))).limit(3);
+  return <ProductDetail product={product} related={related.map(toProduct)} />;
 }

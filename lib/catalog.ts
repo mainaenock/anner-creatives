@@ -9,6 +9,7 @@ export type Product = {
   color: string;
   description: string;
   details: string[];
+  stockQuantity?: number;
 };
 
 export const starterProducts: Product[] = [

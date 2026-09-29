@@ -98,6 +98,14 @@ SIWC establishes identity only; it does not prove workspace membership. Use the 
 
 Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
 
+## Owner bookkeeping workspace
+
+`/admin` is limited to the Site owner identity. New products capture selling price, opening quantity and unit cost. Use **Record stock → Purchased stock** for stock paid for now; it increases inventory at weighted average cost and appears as a cash outflow. Use **Opening stock** for goods already owned so they do not appear as a new cash payment. Existing products start with zero recorded quantity and cost after the migration, so enter their actual opening stock before confirming sales.
+
+Checkout saves an order with server-calculated prices and delivery, initially awaiting payment. The owner checks the till or bank, then confirms payment in **Orders**. Confirmation records revenue, snapshots cost of goods sold and reduces quantity. The order document shown to customers is a payment-pending summary, not a tax invoice. Business operating purchases go in **Expenses**; include production materials in the finished product unit cost and do not record the same cost again as an operating expense.
+
+The dashboard provides period profit and loss, cash movement, stock valuation and CSV cash ledger. These are management books from entered data; opening cash, liabilities, tax, refunds and bank reconciliation are not configured. Use KRA eTIMS for Kenyan electronic tax invoices. The business owner should review opening values and tax treatment with an accountant before relying on statutory reports.
+
 ## Local D1 migrations
 
 For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
