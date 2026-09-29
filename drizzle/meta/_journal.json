@@ -15,6 +15,20 @@
       "when": 1790695412716,
       "tag": "0001_bored_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790700320737,
+      "tag": "0002_lucky_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790700378398,
+      "tag": "0003_bizarre_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }

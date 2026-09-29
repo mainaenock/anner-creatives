@@ -27,10 +27,10 @@ export default function Home() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   useEffect(() => {
-    fetch("/api/products", { cache: "no-store" }).then((response) => response.ok ? response.json() as Promise<{ products: Array<{id:number;name:string;category:string;description:string;price:number;oldPrice:number|null;imageKey:string|null;stockQuantity:number}> }> : Promise.reject()).then((data) => {
-      const current=data.products.map((product) => ({ ...product, oldPrice: product.oldPrice ?? undefined, image: productImageUrl(product.imageKey), images: product.imageKey ? [productImageUrl(product.imageKey)] : [], color: "#d9e9f8", details: ["Handmade by Anner Creatives", "Made in small batches"] }));
+    fetch("/api/products", { cache: "no-store" }).then((response) => response.ok ? response.json() as Promise<{ products: Array<{id:number;name:string;category:string;description:string;price:number;oldPrice:number|null;imageKey:string|null;stockQuantity:number;stockTracked:boolean}> }> : Promise.reject()).then((data) => {
+      const current=data.products.map((product) => ({ ...product, stockQuantity:product.stockTracked?product.stockQuantity:undefined, oldPrice: product.oldPrice ?? undefined, image: productImageUrl(product.imageKey), images: product.imageKey ? [productImageUrl(product.imageKey)] : [], color: "#d9e9f8", details: ["Handmade by Anner Creatives", "Made in small batches"] }));
       setProducts(current);
-      try{const saved=JSON.parse(localStorage.getItem("anner-cart")||"[]") as Array<{id:number;quantity:number}>;setCart(saved.flatMap(entry=>{const product=current.find(item=>item.id===entry.id);return product&&product.stockQuantity>0?[{...product,quantity:Math.min(Math.max(1,entry.quantity),product.stockQuantity)}]:[]}));}catch{localStorage.removeItem("anner-cart");}
+      try{const saved=JSON.parse(localStorage.getItem("anner-cart")||"[]") as Array<{id:number;quantity:number}>;setCart(saved.flatMap(entry=>{const product=current.find(item=>item.id===entry.id);return product&&product.stockQuantity!==0?[{...product,quantity:Math.min(Math.max(1,entry.quantity),product.stockQuantity??Infinity)}]:[]}));}catch{localStorage.removeItem("anner-cart");}
       setCatalogLoaded(true);
     }).catch(() => setCatalogError(true));
   }, []);

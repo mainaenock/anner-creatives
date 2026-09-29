@@ -10,7 +10,7 @@ import ProductDetail from "./product-detail";
 const SITE_URL = "https://annercreatives.co.ke";
 export const dynamic = "force-dynamic";
 
-function toProduct(row:typeof products.$inferSelect):Product { return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:productImageUrl(row.imageKey),images:row.imageKey?[productImageUrl(row.imageKey)]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"],stockQuantity:row.stockQuantity }; }
+function toProduct(row:typeof products.$inferSelect):Product { return { id:row.id, name:row.name,category:row.category,description:row.description,price:row.price,oldPrice:row.oldPrice??undefined,image:productImageUrl(row.imageKey),images:row.imageKey?[productImageUrl(row.imageKey)]:[],color:"#d9e9f8",details:["Handmade by Anner Creatives","Made in small batches"],stockQuantity:row.stockTracked?row.stockQuantity:undefined }; }
 
 async function findProduct(id: string): Promise<Product | undefined> {
   try {

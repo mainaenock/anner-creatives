@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
     const db = getDb();
     const catalog = await db.select().from(products).where(inArray(products.id, [...quantities.keys()]));
-    if (catalog.length !== quantities.size || catalog.some(product => !product.active || product.stockQuantity < (quantities.get(product.id) ?? 0))) return Response.json({ error: "An item is unavailable or does not have enough stock. Please refresh your basket." }, { status: 409 });
+    if (catalog.length !== quantities.size || catalog.some(product => !product.active || (product.stockTracked && product.stockQuantity < (quantities.get(product.id) ?? 0)))) return Response.json({ error: "An item is unavailable or does not have enough stock. Please refresh your basket." }, { status: 409 });
     const items = catalog.map(product => ({ productId: product.id, name: product.name, quantity: quantities.get(product.id)!, unitPrice: product.price, lineTotal: Math.round(product.price * quantities.get(product.id)! * 100) / 100 }));
     const subtotal = Math.round(items.reduce((sum, item) => sum + item.lineTotal, 0) * 100) / 100;
     const deliveryFee = 250;

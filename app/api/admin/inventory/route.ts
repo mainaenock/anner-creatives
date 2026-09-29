@@ -14,9 +14,10 @@ export async function POST(request: Request) {
     const db = getDb();
     const [product] = await db.select().from(products).where(eq(products.id, body.productId!));
     if (!product) return Response.json({ error: "Product not found." }, { status: 404 });
+    if (!product.stockTracked && body.kind !== "opening") return Response.json({ error: "Record the existing stock as opening stock before adding purchases for this product." }, { status: 409 });
     const totalCost = Math.round(quantity * unitCost * 100) / 100;
     await db.batch([
-      db.update(products).set({ stockQuantity: sql`${products.stockQuantity} + ${quantity}`, unitCost: sql`ROUND((${products.stockQuantity} * ${products.unitCost} + ${totalCost}) / (${products.stockQuantity} + ${quantity}), 2)` }).where(eq(products.id, product.id)),
+      db.update(products).set({ stockQuantity: sql`${products.stockQuantity} + ${quantity}`, unitCost: sql`ROUND((${products.stockQuantity} * ${products.unitCost} + ${totalCost}) / (${products.stockQuantity} + ${quantity}), 2)`, stockTracked: true }).where(eq(products.id, product.id)),
       db.insert(inventoryMovements).values({ productId: product.id, kind: body.kind!, quantity, unitCost, totalCost, note: body.note?.trim() || null, paymentMethod: body.kind === "purchase" ? body.paymentMethod?.trim() || null : null, reference: body.reference?.trim() || null, occurredAt: date.toISOString() }),
     ]);
     return Response.json({ ok: true }, { status: 201 });

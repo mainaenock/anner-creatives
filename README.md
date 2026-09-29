@@ -15,7 +15,7 @@ The Sites initializer copies the shared starter and selects managed-linux only w
 
 Whenever reopening or moving a checkout, run `node <plugin-root>/scripts/configure-execution-profile.mjs` before project commands. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
 
-This starter does not use `wrangler.jsonc`.
+ChatGPT Sites reads `.openai/hosting.json`; the separate Cloudflare Worker deployment reads `wrangler.jsonc`.
 
 `install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
 
@@ -100,7 +100,7 @@ Use SIWC for account pages, user-specific dashboards, saved records, and write a
 
 ## Owner bookkeeping workspace
 
-`/admin` is limited to the Site owner identity. New products capture selling price, opening quantity and unit cost. Use **Record stock → Purchased stock** for stock paid for now; it increases inventory at weighted average cost and appears as a cash outflow. Use **Opening stock** for goods already owned so they do not appear as a new cash payment. Existing products start with zero recorded quantity and cost after the migration, so enter their actual opening stock before confirming sales.
+`/admin` is limited to the owner. On the Cloudflare Worker, it verifies a Cloudflare Access JWT and the owner email from `wrangler.jsonc`; the ChatGPT Site uses its separate signed-in identity. New products capture selling price, opening quantity and unit cost. Use **Record stock → Purchased stock** for stock paid for now; it increases inventory at weighted average cost and appears as a cash outflow. Use **Opening stock** for goods already owned so they do not appear as a new cash payment. Existing products remain available with inventory marked **Not counted** until opening quantity and cost are entered. Sales of uncounted products record revenue but have incomplete cost of goods, which the dashboard labels as partial.
 
 Checkout saves an order with server-calculated prices and delivery, initially awaiting payment. The owner checks the till or bank, then confirms payment in **Orders**. Confirmation records revenue, snapshots cost of goods sold and reduces quantity. The order document shown to customers is a payment-pending summary, not a tax invoice. Business operating purchases go in **Expenses**; include production materials in the finished product unit cost and do not record the same cost again as an operating expense.
 
@@ -108,13 +108,15 @@ The dashboard provides period profit and loss, cash movement, stock valuation an
 
 ## Local D1 migrations
 
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
+For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply pending migrations to a fresh local D1 database:
 
 ```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 migrations apply DB --local --config dist/server/wrangler.json --persist-to .wrangler/state
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+Replace `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+
+For the existing Cloudflare Worker, inspect pending production migrations with `node node_modules/wrangler/bin/wrangler.js d1 migrations list anner-creatives-db --remote --config wrangler.jsonc`, then apply them with `node node_modules/wrangler/bin/wrangler.js d1 migrations apply anner-creatives-db --remote --config wrangler.jsonc` before deploying new code. Build with `npm run build` and deploy with `npm run deploy -- --skip-build`. Cloudflare Access protects the custom-domain admin routes; the Worker verifies the Access JWT itself so its `workers.dev` hostname cannot bypass admin authorization. Keep the Access team domain, audience tag, and owner email in `wrangler.jsonc` aligned with the Cloudflare Access application.
 
 ## Diagnostic Commands
 

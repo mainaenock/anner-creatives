@@ -28,13 +28,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       quantities.set(productId, (quantities.get(productId) ?? 0) + quantity);
     }
     const productRows = await db.select().from(products).where(inArray(products.id, [...quantities.keys()]));
-    if (productRows.length !== quantities.size || productRows.some(product => product.stockQuantity < quantities.get(product.id)!)) return Response.json({ error: "There is not enough stock. Record the received stock before confirming payment." }, { status: 409 });
+    if (productRows.length !== quantities.size || productRows.some(product => product.stockTracked && product.stockQuantity < quantities.get(product.id)!)) return Response.json({ error: "There is not enough stock. Record the received stock before confirming payment." }, { status: 409 });
     const occurredAt = new Date().toISOString();
-    const costOfGoods = Math.round(productRows.reduce((sum, product) => sum + product.unitCost * quantities.get(product.id)!, 0) * 100) / 100;
+    const costComplete = productRows.every(product => product.stockTracked);
+    const trackedRows = productRows.filter(product => product.stockTracked);
+    const costOfGoods = Math.round(trackedRows.reduce((sum, product) => sum + product.unitCost * quantities.get(product.id)!, 0) * 100) / 100;
     await db.batch([
-      db.update(orders).set({ status: "paid", paidAt: occurredAt, paymentMethod: body.paymentMethod!, paymentReference: body.paymentReference?.trim() || null, costOfGoods }).where(eq(orders.id, id)),
-      ...productRows.map(product => db.update(products).set({ stockQuantity: sql`${products.stockQuantity} - ${quantities.get(product.id)!}` }).where(eq(products.id, product.id))),
-      ...productRows.map(product => db.insert(inventoryMovements).values({ productId: product.id, kind: "sale", quantity: -quantities.get(product.id)!, unitCost: product.unitCost, totalCost: Math.round(product.unitCost * quantities.get(product.id)! * 100) / 100, note: `Order ${id}`, occurredAt, orderId: id })),
+      db.update(orders).set({ status: "paid", paidAt: occurredAt, paymentMethod: body.paymentMethod!, paymentReference: body.paymentReference?.trim() || null, costOfGoods, costComplete }).where(eq(orders.id, id)),
+      ...trackedRows.map(product => db.update(products).set({ stockQuantity: sql`${products.stockQuantity} - ${quantities.get(product.id)!}` }).where(eq(products.id, product.id))),
+      ...trackedRows.map(product => db.insert(inventoryMovements).values({ productId: product.id, kind: "sale", quantity: -quantities.get(product.id)!, unitCost: product.unitCost, totalCost: Math.round(product.unitCost * quantities.get(product.id)! * 100) / 100, note: `Order ${id}`, occurredAt, orderId: id })),
     ]);
     return Response.json({ ok: true });
   } catch (error) {
